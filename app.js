@@ -23,14 +23,13 @@ app.all("/proxy/*", (req, res) => {
   const options = getOptions(req);
 
   function callback(error, response, body) {
-    if (!error && response.statusCode == 200) {
+    if (!error) {
       for (let header in response.headers) {
         res.set(header, response.headers[header]);
       }
-      if (req.method == "POST") JSON.parse(body);
-      res.send(body);
+      res.status(response.statusCode).send(body);
     } else {
-      res.status(response.statusCode).send(`${ response.statusCode }: ${ error }\n`);
+      throw (error);
     }
   };
 
@@ -57,7 +56,8 @@ function getOptions(req) {
   const options = {
     url: URL,
     headers: req.headers,
-    encoding: null
+    encoding: null,
+    followRedirect: false
   }
   if (req.method == "POST") options["form"] = req.body;
 
